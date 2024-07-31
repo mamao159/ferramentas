@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<!-- saved from url=(0043)https://www.lncc.br/~borges/php/testar.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  
+  <title>Sistema de Ponto</title>
+  <style>
+    table {
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Sistema de Ponto</h1>
+
+  <form id="cadastro-form">
+    <p>
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" name="nome" required="">
+    </p>
+    <p>
+      <label for="senha">Senha:</label>
+      <input type="password" id="senha" name="senha" required="">
+    </p>
+    <p>
+      <button type="button" onclick="cadastrarPessoa()">Cadastrar</button>
+    </p>
+  </form>
+
+  <form id="ponto-form">
+    <p>
+      <label for="funcionario">Funcionário:</label>
+      <select id="funcionario" name="funcionario">
+        <!-- Opções de funcionários serão adicionadas dinamicamente -->
+      <option value="alex marques ferreira">alex marques ferreira</option></select>
+    </p>
+    <p>
+      <button type="button" onclick="registrarPonto()">Registrar Ponto</button>
+    </p>
+  </form>
+
+  <h2>Registros de Ponto</h2>
+  <table id="ponto-table">
+    <thead>
+      <tr>
+        <th>Funcionário</th>
+        <th>Entrada da Manhã</th>
+        <th>Saída da Manhã</th>
+        <th>Entrada da Tarde</th>
+        <th>Saída da Tarde</th>
+      </tr>
+    </thead>
+    <tbody id="ponto-table-body"><tr><td>alex marques ferreira</td><td>18:37:30</td><td>18:37:34</td><td></td><td></td></tr></tbody>
+  </table>
+
+  <div id="mensagem">Ponto registrado para alex marques ferreira - Entrada da Manhã: 18:37:30 - Saída da Manhã: 18:37:34 - Entrada da Tarde:  - Saída da Tarde: </div>
+
+  <button type="button" onclick="salvarRegistrosPonto()">Salvar Registros de Ponto</button>
+
+  <script>
+    var registrosPonto = []; // Array para armazenar os registros de ponto
+    var pessoas = []; // Array para armazenar as pessoas cadastradas
+
+    function cadastrarPessoa() {
+      var nome = document.getElementById('nome').value;
+      var senha = document.getElementById('senha').value;
+
+      // Verifica se a pessoa já está cadastrada
+      var pessoaExistente = pessoas.find(function(pessoa) {
+        return pessoa.nome === nome;
+      });
+
+      if (!pessoaExistente) {
+        var novaPessoa = {
+          nome: nome,
+          senha: senha
+        };
+        pessoas.push(novaPessoa);
+        adicionarOpcaoFuncionario(nome);
+        limparCamposCadastro();
+        alert('Cadastro realizado com sucesso!');
+      } else {
+        alert('Essa pessoa já está cadastrada.');
+      }
+    }
+
+    function adicionarOpcaoFuncionario(nome) {
+      var selectFuncionario = document.getElementById('funcionario');
+      var option = document.createElement('option');
+      option.value = nome;
+      option.text = nome;
+      selectFuncionario.add(option);
+    }
+
+    function limparCamposCadastro() {
+      document.getElementById('nome').value = '';
+      document.getElementById('senha').value = '';
+    }
+
+    function autenticar(nome, senha) {
+      var pessoa = pessoas.find(function(p) {
+        return p.nome === nome;
+      });
+
+      if (pessoa && pessoa.senha === senha) {
+        return true;
+      }
+
+      return false;
+    }
+
+    function registrarPonto() {
+      var funcionario = document.getElementById('funcionario').value;
+      var horario = new Date().toLocaleTimeString(); // Obtém o horário atual
+
+      var senha = prompt('Digite a senha:');
+      if (!autenticar(funcionario, senha)) {
+        alert('Senha incorreta. Não é possível registrar o ponto.');
+        return;
+      }
+
+      var registro = registrosPonto.find(function(registro) {
+        return registro.funcionario === funcionario;
+      });
+
+      if (!registro) {
+        registro = {
+          funcionario: funcionario,
+          entradaManha: '',
+          saidaManha: '',
+          entradaTarde: '',
+          saidaTarde: ''
+        };
+        registrosPonto.push(registro);
+      }
+
+      if (registro.entradaManha === '') {
+        registro.entradaManha = horario;
+      } else if (registro.saidaManha === '') {
+        registro.saidaManha = horario;
+      } else if (registro.entradaTarde === '') {
+        registro.entradaTarde = horario;
+      } else if (registro.saidaTarde === '') {
+        registro.saidaTarde = horario;
+      }
+
+      atualizarTabelaPonto(); // Atualiza a tabela com os registros de ponto
+      exibirMensagem(funcionario, registro.entradaManha, registro.saidaManha, registro.entradaTarde, registro.saidaTarde); // Exibe a mensagem com os horários e o nome da pessoa selecionada
+    }
+
+    function atualizarTabelaPonto() {
+      var tableBody = document.getElementById('ponto-table-body');
+
+      // Limpa a tabela
+      tableBody.innerHTML = '';
+
+      // Preenche a tabela com os registros de ponto
+      registrosPonto.forEach(function(registro) {
+        var row = document.createElement('tr');
+
+        var funcionarioCell = document.createElement('td');
+        funcionarioCell.textContent = registro.funcionario;
+        row.appendChild(funcionarioCell);
+
+        var entradaManhaCell = document.createElement('td');
+        entradaManhaCell.textContent = registro.entradaManha;
+        row.appendChild(entradaManhaCell);
+
+        var saidaManhaCell = document.createElement('td');
+        saidaManhaCell.textContent = registro.saidaManha;
+        row.appendChild(saidaManhaCell);
+
+        var entradaTardeCell = document.createElement('td');
+        entradaTardeCell.textContent = registro.entradaTarde;
+        row.appendChild(entradaTardeCell);
+
+        var saidaTardeCell = document.createElement('td');
+        saidaTardeCell.textContent = registro.saidaTarde;
+        row.appendChild(saidaTardeCell);
+
+        tableBody.appendChild(row);
+      });
+    }
+
+    function exibirMensagem(funcionario, entradaManha, saidaManha, entradaTarde, saidaTarde) {
+      var mensagem = document.getElementById('mensagem');
+      mensagem.textContent = 'Ponto registrado para ' + funcionario + ' - Entrada da Manhã: ' + entradaManha + ' - Saída da Manhã: ' + saidaManha + ' - Entrada da Tarde: ' + entradaTarde + ' - Saída da Tarde: ' + saidaTarde;
+    }
+
+    function salvarRegistrosPonto() {
+      var senha = prompt('Digite a senha:');
+      if (senha === '123') {
+        var csvContent = 'data:text/csv;charset=utf-8,';
+        csvContent += 'Funcionário,Entrada da Manhã,Saída da Manhã,Entrada da Tarde,Saída da Tarde\n';
+
+        registrosPonto.forEach(function(registro) {
+          csvContent += registro.funcionario + ',' + registro.entradaManha + ',' + registro.saidaManha + ',' + registro.entradaTarde + ',' + registro.saidaTarde + '\n';
+        });
+
+        var encodedUri = encodeURI(csvContent);
+        var link = document.createElement('a');
+        link.href = encodedUri;
+        link.download = 'registros_ponto.csv';
+        link.click();
+      } else {
+        alert('Senha incorreta. Não é possível salvar os registros de ponto.');
+      }
+    }
+  </script>
+
+
+</body></html>
